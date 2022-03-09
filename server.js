@@ -10,6 +10,10 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
+app.use('/pi/reviews', require('./routes/reviewRoute'))
+app.use('/pi/videocourse', require('./routes/videocourseRoute'))
+
+
 
 // Serve frontend
 /*if (process.env.NODE_ENV === 'production') {
