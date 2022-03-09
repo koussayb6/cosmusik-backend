@@ -1,15 +1,21 @@
-const express = require('express')
-const dotenv = require('dotenv').config()
-const connectDB = require('./config/db')
-const port = process.env.PORT || 5000
+const express = require("express");
+const dotenv = require("dotenv").config();
+const connectDB = require("./config/db");
+const bodyParser = require("body-parser");
+const postRoutes = require("./routes/classPostRouter");
+const groupRoutes = require("./routes/groupRouter");
+const port = process.env.PORT || 5000;
 
-connectDB()
+connectDB();
 
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
+//Routes
+app.use("/api/post", postRoutes);
+app.use("/api/group", groupRoutes);
 
 // Serve frontend
 /*if (process.env.NODE_ENV === 'production') {
@@ -24,4 +30,4 @@ app.use(express.urlencoded({ extended: false }))
   app.get('/', (req, res) => res.send('Please set to production'))
 }*/
 
-app.listen(port, () => console.log(`Server started on port ${port}`))
+app.listen(port, () => console.log(`Server started on port ${port}`));
