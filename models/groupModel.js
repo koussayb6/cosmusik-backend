@@ -7,7 +7,7 @@ const GroupSchema = new mongoose.Schema(
       required: true,
     },
     admins: {
-      type: [],
+      type: [String],
     },
     members: {
       type: [],
@@ -17,6 +17,16 @@ const GroupSchema = new mongoose.Schema(
     },
     posts: {
       type: [],
+    },
+    requests: {
+      type: [
+        {
+          requesterId: String,
+          description: String,
+          timestamp: Number,
+        },
+      ],
+      required: true,
     },
   },
   {
