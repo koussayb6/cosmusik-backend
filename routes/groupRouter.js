@@ -12,5 +12,6 @@ router.patch(
   "/confirmRequest/:requestId/:groupId",
   groupController.confirmRequest
 );
+router.get("/search", groupController.searchForGroup);
 
 module.exports = router;

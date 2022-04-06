@@ -4,6 +4,9 @@ const connectDB = require("./config/db");
 const bodyParser = require("body-parser");
 const postRoutes = require("./routes/classPostRouter");
 const groupRoutes = require("./routes/groupRouter");
+const chatRoutes = require("./routes/chatRouter");
+const userRoutes = require("./routes/userRoute");
+const messageRoutes = require("./routes/messageRoutes");
 const port = process.env.PORT || 5000;
 
 connectDB();
@@ -16,6 +19,9 @@ app.use(express.urlencoded({ extended: false }));
 //Routes
 app.use("/api/post", postRoutes);
 app.use("/api/group", groupRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/message", messageRoutes);
 
 // Serve frontend
 /*if (process.env.NODE_ENV === 'production') {

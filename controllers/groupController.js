@@ -1,5 +1,6 @@
 const GroupModel = require("../models/groupModel");
 const ObjectID = require("mongoose").Types.ObjectId;
+const asyncHandler = require("express-async-handler");
 
 module.exports.readGroup = async (req, res) => {
   GroupModel.find((err, docs) => {
@@ -179,3 +180,15 @@ module.exports.confirmRequest = (req, res) => {
       console.log(err);
     }); */
 };
+
+module.exports.searchForGroup = asyncHandler(async (req, res) => {
+  const keyword = req.query.search
+    ? {
+        $or: [{ title: { $regex: req.query.search, $options: "i" } }],
+        //     $and: [{ public: { $exists: true } }],
+      }
+    : {};
+
+  const groups = await await GroupModel.find(keyword);
+  res.send(groups);
+});
