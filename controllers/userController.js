@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const speakeasy = require('speakeasy')
 const asyncHandler = require('express-async-handler')
 const User = require('../models/userModel')
+const nodemailer= require('../config/nodemailer')
+const passport = require("passport");
+const {Strategy: FacebookStrategy} = require("passport-facebook");
 
 // @desc    Register new user
 // @route   POST /api/users
@@ -25,22 +29,32 @@ const registerUser = asyncHandler(async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
-
+    const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
+    const temp_secret = speakeasy.generateSecret();
     // Create user
     const user = await User.create({
         name,
         email,
         password: hashedPassword,
-        role: "user"
+        role: "user",
+        confirmationCode: token,
+        tempSecret: temp_secret.base32
     })
 
     if (user) {
+        nodemailer.sendConfirmationEmail(
+            user.name,
+            user.email,
+            user.confirmationCode);
+
         res.status(201).json({
             _id: user.id,
             name: user.name,
             email: user.email,
-            token: generateToken(user._id),
+            conf: user.confirmationCode,
+            secret: user.tempSecret,
         })
+
     } else {
         res.status(400)
         throw new Error('Invalid user data')
@@ -57,6 +71,11 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email })
 
     if (user && (await bcrypt.compare(password, user.password))) {
+        if (user.status != "Active") {
+            return res.status(401).send({
+                message: "Pending Account. Please Verify Your Email!",
+            });
+        }
         res.json({
             _id: user.id,
             name: user.name,
@@ -128,8 +147,34 @@ const getAll = asyncHandler(async (req, res) => {
     if(req.user.role!== "admin")
         res.status(401).end("not admin")
     const users= await User.find()
-    res.status(200).json(users)
+    res.status(200).json(users).select('-password')
 })
+
+const verifyUser = (req, res, next) => {
+    User.findOne({
+        confirmationCode: req.params.confirmationCode,
+    })
+        .then((user) => {
+            if (!user) {
+                return res.status(404).send({ message: "User Not found." });
+            }
+
+            user.status = "Active";
+            user.save((err) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                }
+                res.status(201).json({
+                    _id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    token: generateToken(user._id),
+                })
+            });
+        })
+        .catch((e) => console.log("error", e));
+};
 
 // Generate JWT
 const generateToken = (id) => {
@@ -138,10 +183,39 @@ const generateToken = (id) => {
     })
 }
 
+const verifySecret= async (req,res) => {
+    const { userId, token } = req.body;
+    try {
+        // Retrieve user from database
+        const user= await User.findById(userId)
+        const secret  = user.tempSecret;
+        const verified = speakeasy.totp.verify({
+            secret,
+            encoding: 'base32',
+            token
+        });
+        if (verified) {
+            // Update user data
+            res.json({ verified: true })
+        } else {
+            res.json({ verified: false})
+        }
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving user'})
+    };
+}
+
+
+
+
+
 module.exports = {
     registerUser,
     loginUser,
     getAll,
     updateUser,
-    deleteUser
+    deleteUser,
+    verifyUser,
+    verifySecret,
 }
