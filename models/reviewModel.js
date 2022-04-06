@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const reviewSchema = mongoose.Schema(
     {
         user: {
-            type: Number,
+            type: String,
             required: true
         },
         rating: {
@@ -14,7 +14,9 @@ const reviewSchema = mongoose.Schema(
             type: String,
             required: true
         },
-
+        coursetype: {
+            type: String,
+        },
     },
     {
         timestamps: true,

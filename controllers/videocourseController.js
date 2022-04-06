@@ -72,9 +72,31 @@ const updatesection = (req, res) => {
     }
 };
 
+const addvideo = asyncHandler(async (req, res) => {
+
+    const vc = await videocourse.findByIdAndUpdate({_id:req.params.idvideocourse ,"sections._id":req.params.idsection},
+        {
+            $push: {
+                "sections.$.videos": {
+                    title: req.body.title,
+                    description: req.body.description,
+                    subtitles: req.body.subtitles,
+                    lengh: req.body.lengh,
+                    path: req.body.path
+                },
+            },
+        },
+    );
+    res.send("done")
+})
+
+
+
 module.exports = {
     getVideoCourse,
     setVideoCourse,
     addsection,
-    updatesection
+    updatesection,
+    addvideo,
+
 }

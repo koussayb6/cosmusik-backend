@@ -8,8 +8,8 @@ const {
 } = require('../controllers/reviewController')
 
 
-router.route('/').get(getReviews).post(setReview)
-router.route('/:id').put(updateReview).delete(deleteReview)
+router.route('/').get(getReviews)
+router.route('/:id').post(setReview).put(updateReview).delete(deleteReview)
 
 
 module.exports = router

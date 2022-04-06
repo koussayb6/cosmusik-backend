@@ -59,14 +59,15 @@ const videoCourseSchema = new mongoose.Schema(
                                 title:String,
                                 description:String,
                                 subtitles:String,
-                                lengh:String,
+                                length:Number,
                                 path:String,
                             }
                         ]
                     }
                 }
             ]
-        }
+        },
+
 
     },
     {

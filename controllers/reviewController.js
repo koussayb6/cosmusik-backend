@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler')
 const Review = require('../models/reviewModel')
 const User = require('../models/userModel')
 const {json} = require("express");
+const videocourse = require("../models/videocourseModel");
 
 const getReviews = asyncHandler(async (req,res) => {
     const reviews = await Review.find()
@@ -22,6 +23,17 @@ const setReview = asyncHandler(async (req, res) => {
         rating: req.body.rating
     })
 
+
+
+    const vc = await videocourse.findByIdAndUpdate(req.params.id,
+        {
+            $push: {
+                reviews:
+                    review.id
+
+            },
+        },
+    );
     res.json(review)
 })
 
@@ -32,10 +44,6 @@ const updateReview = asyncHandler(async (req, res) => {
         res.status(400)
         throw new Error('review not found')
     }
-
-    // Check for user
-
-    // Make sure the logged in user matches the goal user
 
     const updatedReview = await Review.findByIdAndUpdate(req.params.id, req.body, {
         new: true,

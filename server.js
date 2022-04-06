@@ -12,6 +12,9 @@ app.use(express.urlencoded({ extended: false }))
 
 app.use('/pi/reviews', require('./routes/reviewRoute'))
 app.use('/pi/videocourse', require('./routes/videocourseRoute'))
+app.use('/pi/video', require('./routes/videoRoute'))
+app.use('/pi/playlist', require('./routes/playlistRoute'))
+app.use('/pi/instrument', require('./routes/instrumentRoute'))
 
 
 
