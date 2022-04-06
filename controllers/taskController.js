@@ -12,12 +12,11 @@ module.exports.readTask=(req,res)=>{
 }
 module.exports.createTask= async (req,res)=>{
     const newTask = new taskModel({
-       taskId:req.body.taskId, 
        title:req.body.title,
        description:req.body.description,
        limitDate:req.body.limitDate,
        image:req.body.image,
-       questions:req.body.questions
+       questions:[req.body.questions]
        
 
        
@@ -26,7 +25,7 @@ module.exports.createTask= async (req,res)=>{
         const task= await newTask.save()
         return res.status(201).json(task)
     } catch(err){
-        return res.status(400).send(err)
+        return res.status(400).send("error while creating task"+err)
     }
 }
 
@@ -67,5 +66,41 @@ module.exports.deleteTask=(req,res)=>{
             else console.log("error to Delete data :"+err)
         }
     )
+    
+}
+
+module.exports.addQuestion=(req,res)=>{
+    if(!objectId.isValid(req.params.id))
+    return res.status(400).send('ID unknown : '+ req.params.id)
+    try{
+        return taskModel.findByIdAndUpdate(
+            req.params.id,
+            {
+             $push:{
+                 questions:{
+                    
+                    question:req.body.question,
+                    answers:req.body.answers,
+                    correctAnswer:req.body.correctAnswer
+
+                 }
+             }
+            },
+            {new: true},
+            (err,docs)=>{
+                if(!err) return res.send(docs)
+                else  return res.status(400).send(err)
+            }
+        )
+    }catch(err){
+        res.status(400).send(err)
+    }
+} 
+
+module.exports.editQuestion=(req,res)=>{
+    
+}
+
+module.exports.deleteQuestion=(req,res)=>{
     
 }

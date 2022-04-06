@@ -64,3 +64,27 @@ module.exports.deleteinteractiveCourse=(req,res)=>{
     )
     
 }
+module.exports.filtreit=async (req,res)=>{
+const {title, price, state}= req.query
+    let condition={}
+
+    if(title){
+        condition.title={$regex: title}
+    }
+    if(price) condition.price=price
+    if(state) condition.state={$regex: title}
+    const it= await interactiveCourseModel.find(condition)
+    res.status(200).json(it)
+}
+
+module.exports.addweek=(req,res)=>{
+   
+}
+
+module.exports.editweek=(req,res)=>{
+    
+}
+
+module.exports.deleteweek=(req,res)=>{
+    
+}
