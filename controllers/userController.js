@@ -71,11 +71,11 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email })
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        if (user.status != "Active") {
+        /*if (user.status != "Active") {
             return res.status(401).send({
                 message: "Pending Account. Please Verify Your Email!",
             });
-        }
+        }*/
         res.json({
             _id: user.id,
             name: user.name,
@@ -144,9 +144,15 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 //get all users for admin
 const getAll = asyncHandler(async (req, res) => {
-    if(req.user.role!== "admin")
-        res.status(401).end("not admin")
-    const users= await User.find()
+    const {name, email, role}= req.query
+    let condition={}
+
+    if(name){
+        condition.name={$regex: name}
+    }
+    if(email) condition.email={$regex: email}
+    if(role) condition.role={$regex: role}
+    const users= await User.find(condition)
     res.status(200).json(users).select('-password')
 })
 
