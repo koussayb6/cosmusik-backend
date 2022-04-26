@@ -3,7 +3,7 @@ const interactiveCourseController =require('../controllers/interactiveCourseCont
 
 router.get('/',interactiveCourseController.readinteractiveCourse)
 router.get('/filtre',interactiveCourseController.filtreit)
-router.post('/',interactiveCourseController.createinteractiveCourse)
+router.post('/create',interactiveCourseController.createinteractiveCourse)
 router.put('/:id',interactiveCourseController.updateinteractiveCourse)
 router.delete('/:id',interactiveCourseController.deleteinteractiveCourse)
 //Weeks

@@ -12,12 +12,8 @@ module.exports.readinteractiveCourse=(req,res)=>{
 module.exports.createinteractiveCourse= async (req,res)=>{
     const newinteractiveCourse = new interactiveCourseModel({
        title:req.body.title,
-       description:req.body.description,
-
-
-       
-
-       
+       description:req.body.description
+         
     })
     try{
         const interactiveCourse= await newinteractiveCourse.save()
