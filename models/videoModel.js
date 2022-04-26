@@ -12,7 +12,7 @@ const videoSchema = new Schema({
     },
     artist: {
         type: String,
-        required: true
+        //required: true
     },
     description: {
         type: String,

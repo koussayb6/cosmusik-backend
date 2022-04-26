@@ -2,10 +2,8 @@ const mongoose = require('mongoose')
 
 const videoCourseSchema = new mongoose.Schema(
     {
-        user:{
-            type:String,
-            required:true,
-        },
+        user:{ type: mongoose.Schema.Types.ObjectId, ref: "user" },
+
         title:{
             type:String,
             //required: true
@@ -15,7 +13,7 @@ const videoCourseSchema = new mongoose.Schema(
             //required: true
         },
         price:{
-            type:String,
+            type:Number,
             //required: true
         },
         state:{
@@ -23,7 +21,7 @@ const videoCourseSchema = new mongoose.Schema(
             //required: true
         },
         rating:{
-            type:String,
+            type:Number,
             //required: true
         },
         language:{
@@ -42,11 +40,7 @@ const videoCourseSchema = new mongoose.Schema(
             type:String,
             //required: true
         },
-        reviews:{
-            type:[String
-
-            ]
-        },
+        reviews:[{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
 
         sections:{
             type:[

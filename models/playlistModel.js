@@ -11,7 +11,7 @@ const playlistSchema = mongoose.Schema(
             required: true
         },
         videos: [{ type: mongoose.Schema.Types.ObjectId, ref: "video" }],
-        users: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+        users: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
     },
     {
         timestamps: true,

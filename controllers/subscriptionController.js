@@ -13,17 +13,17 @@ const getsubscriptions = asyncHandler(async (req,res) => {
 
 const addsubscription = asyncHandler(async (req, res) => {
 
-    const course = await videocourse.findById(req.body.courseId);
+    const course = await videocourse.findById(req.params.idcourse);
     let lessons=[];
     let totalhours=0;
     course.sections.forEach(section =>
         section.videos.forEach(video =>{
             lessons.push({lessonId: video._id ,duree: video.length , completed: false}),totalhours += video.length}));
-    const sub = await User.findByIdAndUpdate(req.params.id,
+    const sub = await User.findByIdAndUpdate(req.params.iduser,
         {
             $push: {
                 subscriptions: {
-                    courseId: req.body.courseId,
+                    courseId: req.params.idcourse,
                     coursetype: req.body.coursetype,
                     progress: 0,
                     totalhours: totalhours,
@@ -33,7 +33,7 @@ const addsubscription = asyncHandler(async (req, res) => {
 
         },
     );
-    res.json(sub.subscriptions)
+    res.json(sub)
 })
 
 const validevideo = asyncHandler(async (req, res) => {

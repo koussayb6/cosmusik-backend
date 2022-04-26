@@ -7,27 +7,35 @@ const User = require('../models/userModel')
 const {json} = require("express");
 
 const getVideoCourse = asyncHandler(async (req,res) => {
-    const vc = await videocourse.find()
+    const vc = await videocourse.find().populate('user')
+
+    res.json(vc)
+})
+const getOneVideoCourse = asyncHandler(async (req,res) => {
+    const vc = await videocourse.findById(req.params.iduser).populate('user')
 
     res.json(vc)
 })
 
 const setVideoCourse = asyncHandler(async (req, res) => {
-    if (!req.body.user) {
+    if (!req.body.title) {
         res.status(400)
         throw new Error('Please add a text field')
     }
+    const user =await User.findById(req.params.iduser)
     const vc = await videocourse.create({
-        user : req.body.user,
+        user : user ,
         title: req.body.title,
+        state: req.body.state,
         description: req.body.description,
         price: req.body.price,
+        language: req.body.language,
         sections:req.body.sections
 
 
     })
 
-    res.json(vc)
+    res.json(req.body)
 })
 
 const addsection = asyncHandler(async (req, res) => {
@@ -77,7 +85,7 @@ const addvideo = asyncHandler(async (req, res) => {
     const vc = await videocourse.findByIdAndUpdate({_id:req.params.idvideocourse ,"sections._id":req.params.idsection},
         {
             $push: {
-                "sections.$.videos": {
+                "sections.0.videos": {
                     title: req.body.title,
                     description: req.body.description,
                     subtitles: req.body.subtitles,
@@ -98,5 +106,6 @@ module.exports = {
     addsection,
     updatesection,
     addvideo,
+    getOneVideoCourse
 
 }

@@ -2,10 +2,7 @@ const mongoose = require('mongoose')
 
 const reviewSchema = mongoose.Schema(
     {
-        user: {
-            type: String,
-            required: true
-        },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
         rating: {
             type: Number,
             required: true
@@ -13,9 +10,6 @@ const reviewSchema = mongoose.Schema(
         message: {
             type: String,
             required: true
-        },
-        coursetype: {
-            type: String,
         },
     },
     {
