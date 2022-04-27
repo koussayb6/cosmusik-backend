@@ -47,21 +47,22 @@ const interactiveCourseSchema = new mongoose.Schema(
             type: Date,
             //required: true
         },
-        tasks: {
-            type: [String]
-        },
+        
+        
         weeks: {
             type:
                 [
                     {
-                        weekNumber: Number,
-                        course:
+                        title:String,
+                        description:String,
+                        lessons:
                         {
                             type:
                                 [
                                     {
-                                        title: String,
-                                        level: Number
+                                        title:String,
+                                        description:String,
+                                        length:Number,
                                     }
                                 ]
                         }
@@ -69,11 +70,14 @@ const interactiveCourseSchema = new mongoose.Schema(
 
                 ]
         },
-
+        reviews:[{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
+        instrument:{ type: mongoose.Schema.Types.ObjectId, ref: "Instrument" },
+        user:{ type: mongoose.Schema.Types.ObjectId, ref: "User" }
     },
+    
 
     {
         timestamps: true
     }
 )
-module.exports = mongoose.model('interactiveCourse', interactiveCourseSchema)
+module.exports = mongoose.model('InteractiveCourse', interactiveCourseSchema)

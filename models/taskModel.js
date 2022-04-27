@@ -10,15 +10,15 @@ const PostSchema = new mongoose.Schema(
     },
     description:{
         type:String,
-        required: true
+      
     },
     limitDate:{
         type:Date,
-        required: true
+        
     },
     image:{
         type:String,
-        required: true
+        
     },
     questions:{
         type:[
@@ -31,13 +31,11 @@ const PostSchema = new mongoose.Schema(
 
         ]
     },
-    iCourse:{
-        type:String
-    },
+    course:  { type: mongoose.Schema.Types.ObjectId, ref: "InteractiveCourse" }
     
 },
 {
     timestamps:true
 }
 );
-module.exports = mongoose.model('task',PostSchema)
+module.exports = mongoose.model('Task',PostSchema)

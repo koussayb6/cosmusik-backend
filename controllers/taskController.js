@@ -1,6 +1,7 @@
 
 const req = require('express/lib/request')
 const res = require('express/lib/response')
+const interactiveCourseModel = require('../models/interactiveCourseModel')
 const taskModel = require('../models/taskModel')
 const objectId= require('mongoose').Types.ObjectId
 
@@ -11,12 +12,14 @@ module.exports.readTask=(req,res)=>{
     })
 }
 module.exports.createTask= async (req,res)=>{
+    const  course=await interactiveCourseModel.findById(req.params.courseid)
     const newTask = new taskModel({
        title:req.body.title,
        description:req.body.description,
        limitDate:req.body.limitDate,
        image:req.body.image,
-       questions:[req.body.questions]
+       questions:[req.body.questions],
+       course:course
        
 
        
@@ -30,16 +33,17 @@ module.exports.createTask= async (req,res)=>{
 }
 
 
-module.exports.updateTask=(req,res)=>{
+module.exports.updateTask=async(req,res)=>{
     if(!objectId.isValid(req.params.id))
     return res.status(400).send('ID unknown : '+ req.params.id)
-
+    const  course=await interactiveCourseModel.findById(req.params.courseid)
 const updatedRecord={
        title:req.body.title,
        description:req.body.description,
        limitDate:req.body.limitDate,
        image:req.body.image,
-       questions:req.body.questions
+       questions:req.body.questions,
+       course:course
 
 }
  taskModel.findByIdAndUpdate(

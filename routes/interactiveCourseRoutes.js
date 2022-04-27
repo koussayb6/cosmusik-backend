@@ -1,15 +1,27 @@
 const router= require('express').Router();
-const interactiveCourseController =require('../controllers/interactiveCourseController')
+const interactiveCourseController =require('../controllers/interactiveCourseController');
+const { protect } = require('../middleware/authMiddleware');
+const {getInteractiveCourse,
+    setInteractiveCourse,
+    addweek,
+    updateweek,
+    addlesson,
+    getOneInteractiveCourse
 
-router.get('/',interactiveCourseController.readinteractiveCourse)
-router.get('/filtre',interactiveCourseController.filtreit)
-router.post('/create',interactiveCourseController.createinteractiveCourse)
-router.put('/:id',interactiveCourseController.updateinteractiveCourse)
-router.delete('/:id',interactiveCourseController.deleteinteractiveCourse)
+} = require('../controllers/interactiveCourseController')
+
+const {getsubscriptions, addsubscription,validelesson} = require("../controllers/subscriptionController");
+
+router.route('/').get(protect,getInteractiveCourse).post(protect,setInteractiveCourse)
+router.route('/:id').post(protect,addweek).put(protect,updateweek).get(protect,getOneInteractiveCourse)
+router.route('/addlesson/:idinteractivecourse/:idweek').post(protect,addlesson)
+router.route('/validlesson/:iduser/:idsubscription/:idlesson').put(protect,validelesson)
+router.route('/subscription/:id').get(protect,getsubscriptions)
+router.route('/subscription/:iduser/:idcourse').post(protect,addsubscription)
+
 //Weeks
-router.patch('/add-week/:id',interactiveCourseController.addweek)
-router.patch('/edit-week/:id',interactiveCourseController.editweek)
-router.patch('/delete-week/:id',interactiveCourseController.editweek)
+router.route('/add-week/:id').post(protect,interactiveCourseController.addweek)
+router.route('/delete-week/:id').put(protect,interactiveCourseController.updateweek)
 module.exports= router
 
 module.exports= router
