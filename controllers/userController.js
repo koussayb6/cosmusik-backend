@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
+const userModel = require("../models/userModel");
 
 // @desc    Register new user
 // @route   POST /api/users
@@ -125,9 +126,15 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 //get all users for admin
 const getAll = asyncHandler(async (req, res) => {
-  if (req.user.role !== "admin") res.status(401).end("not admin");
+  /*if (req.user.role !== "admin") res.status(401).end("not admin");*/
   const users = await User.find();
   res.status(200).json(users);
+});
+
+//get one user
+const getOneUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.status(200).json(user);
 });
 
 // Generate JWT
@@ -137,10 +144,25 @@ const generateToken = (id) => {
   });
 };
 
+const searchForUser = asyncHandler(async (req, res) => {
+  const keyword = req.query.search
+    ? {
+        $and: [{ name: { $regex: req.query.search, $options: "i" } }],
+        //     $and: [{ public: { $exists: true } }],
+      }
+    : {};
+
+  const users = await userModel.find(keyword);
+  res.send(users);
+  
+});
+
 module.exports = {
   registerUser,
   loginUser,
   getAll,
   updateUser,
   deleteUser,
+  getOneUser,
+  searchForUser,
 };

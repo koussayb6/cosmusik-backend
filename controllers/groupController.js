@@ -9,6 +9,12 @@ module.exports.readGroup = async (req, res) => {
   }).sort({ createdAt: -1 });
 };
 
+module.exports.readOneGroup = async (req, res) => {
+  GroupModel.findById(req.params.id, (err, docs) => {
+    if (!err) res.send(docs);
+    else console.log("Error to get data : " + err);
+  }).sort({ createdAt: -1 });
+};
 module.exports.creatGroup = async (req, res) => {
   // if (!ObjectID.isValid(req.params.id))
   //return res.status(400).send("ID unknown : " + req.params.id);
@@ -86,6 +92,32 @@ module.exports.addAdminGroup = (req, res) => {
     return res.status(400).send(err);
   }
 };
+module.exports.sendRequest = (req, res) => {
+  if (!ObjectID.isValid(req.params.id))
+    return res.status(400).send("ID unknown : " + req.params.id);
+  try {
+    GroupModel.findById(req.params.id, (err, docs) => {
+      GroupModel.findByIdAndUpdate(
+        req.params.id,
+        {
+          $push: {
+            requests: {
+              requesterId: req.body.userCnte,
+              description: req.body.description,
+              timestamp: new Date().getTime(),
+            },
+          },
+        },
+        (err, docs) => {
+          if (!err) return res.send("Requested added");
+          else return res.status(400).send(err);
+        }
+      );
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 module.exports.joinGroup = (req, res) => {
   if (!ObjectID.isValid(req.params.id))
@@ -93,38 +125,19 @@ module.exports.joinGroup = (req, res) => {
 
   try {
     GroupModel.findById(req.params.id, (err, docs) => {
-      if (!docs.public) {
-        GroupModel.findByIdAndUpdate(
-          req.params.id,
-          {
-            $push: {
-              requests: {
-                requesterId: req.body.userCnte,
-                description: req.body.description,
-                timestamp: new Date().getTime(),
-              },
-            },
+      GroupModel.findByIdAndUpdate(
+        req.params.id,
+        {
+          $push: {
+            members: req.body.userCnte,
           },
-          (err, docs) => {
-            if (!err) return res.send("Requested added");
-            else return res.status(400).send(err);
-          }
-        );
-      } else {
-        GroupModel.findByIdAndUpdate(
-          req.params.id,
-          {
-            $push: {
-              members: req.body.userCnte,
-            },
-          },
+        },
 
-          (err, docs) => {
-            if (!err) return res.send("join success");
-            else return res.status(400).send(err);
-          }
-        );
-      }
+        (err, docs) => {
+          if (!err) return res.send("join success");
+          else return res.status(400).send(err);
+        }
+      );
     });
   } catch (err) {
     return res.status(400).send(err);
