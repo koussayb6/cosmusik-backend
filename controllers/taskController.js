@@ -11,12 +11,15 @@ module.exports.readTask=(req,res)=>{
         else console.log("error to get data :"+err)
     })
 }
-module.exports.createTask= async (req,res)=>{
+
+
+/**module.exports.createTask= async (req,res)=>{
     const  course=await interactiveCourseModel.findById(req.params.courseid)
     const newTask = new taskModel({
        title:req.body.title,
        description:req.body.description,
-       limitDate:req.body.limitDate,
+       limitDate:req.body.start,
+       start:req.body.start,
        image:req.body.image,
        questions:[req.body.questions],
        course:course
@@ -31,7 +34,7 @@ module.exports.createTask= async (req,res)=>{
         return res.status(400).send("error while creating task"+err)
     }
 }
-
+**/
 
 module.exports.updateTask=async(req,res)=>{
     if(!objectId.isValid(req.params.id))

@@ -9,6 +9,7 @@ const cors= require('cors')
 
 const taskRoutes= require('./routes/taskRoutes')
 const interactiveCourseRoutes= require('./routes/interactiveCourseRoutes')
+const calendarRoutes= require('./routes/calendarRoutes')
 
 connectDB()
 
@@ -22,6 +23,7 @@ app.use('/api/users', require('./routes/userRoute'))
 //routes
 app.use('/api/task',taskRoutes)
 app.use('/api/interactiveCourse',interactiveCourseRoutes)
+app.use('/api/calendar',calendarRoutes)
 
 app.listen(port, () => console.log(`Server started on port ${port}`))
 /*

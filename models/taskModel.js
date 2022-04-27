@@ -12,6 +12,7 @@ const PostSchema = new mongoose.Schema(
         type:String,
       
     },
+    start:Date,
     limitDate:{
         type:Date,
         
