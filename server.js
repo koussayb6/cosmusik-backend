@@ -1,21 +1,24 @@
-const express = require('express')
-const dotenv = require('dotenv').config()
-const connectDB = require('./config/db')
+const express = require("express");
+const dotenv = require("dotenv").config();
+const connectDB = require("./config/db");
 const passport = require("passport");
-const {Strategy: FacebookStrategy} = require("passport-facebook");
+const { Strategy: FacebookStrategy } = require("passport-facebook");
 const User = require("./models/userModel");
-const port = process.env.PORT || 5000
-const cors= require('cors')
+const port = process.env.PORT || 5000;
+const cors = require("cors");
+const PostRoute = require("./routes/postRoutes");
+const EventRoute = require("./routes/eventRoutes");
+connectDB();
 
-connectDB()
+const app = express();
 
-const app = express()
-
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
-app.use(cors())
-app.use('/api/users', require('./routes/userRoute'))
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cors());
+app.use("/api/users", require("./routes/userRoute"));
+app.use("/api/posts", PostRoute);
+app.use("/api/event", EventRoute);
+/*
 passport.use(new FacebookStrategy({
         clientID: process.env.FB_CLIENT_ID,
         clientSecret: process.env.FB_CLIENT_SECRET,
@@ -37,7 +40,7 @@ app.get('/auth/facebook/callback',
         // Successful authentication, redirect home.
         res.send(req.user.facebookId);
     });
-
+*/
 // Serve frontend
 /*if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/build')))
@@ -51,4 +54,4 @@ app.get('/auth/facebook/callback',
   app.get('/', (req, res) => res.send('Please set to production'))
 }*/
 
-app.listen(port, () => console.log(`Server started on port ${port}`))
+app.listen(port, () => console.log(`Server started on port ${port}`));
