@@ -22,7 +22,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email })
 
     if (userExists) {
-        res.status(400)
+        res.status(400).json({message: "User already exists"} )
         throw new Error('User already exists')
     }
 
@@ -48,10 +48,8 @@ const registerUser = asyncHandler(async (req, res) => {
             user.confirmationCode);
 
         res.status(201).json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            conf: user.confirmationCode,
+
+            message: `a confirmation email has been sent to ${user.email}`,
             secret: user.tempSecret,
         })
 
@@ -71,16 +69,26 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email })
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        /*if (user.status != "Active") {
-            return res.status(401).send({
+        if (user.status != "Active") {
+            return res.status(401).json({
                 message: "Pending Account. Please Verify Your Email!",
             });
-        }*/
+        }
+        if(user.twoFactor){
+           return res.json({
+                user:{_id: user.id,
+                name: user.name,
+                email: user.email,
+                },
+                otp: true
+            })
+        }
         res.json({
             _id: user.id,
             name: user.name,
             email: user.email,
             token: generateToken(user._id),
+            otp: user.tempSecret
         })
     } else {
         res.status(400)
@@ -176,6 +184,8 @@ const verifyUser = (req, res, next) => {
                     name: user.name,
                     email: user.email,
                     token: generateToken(user._id),
+                    otp: user.tempSecret
+
                 })
             });
         })
@@ -190,22 +200,40 @@ const generateToken = (id) => {
 }
 
 const verifySecret= async (req,res) => {
-    const { userId, token } = req.body;
+    const { name, code } = req.body;
     try {
         // Retrieve user from database
-        const user= await User.findById(userId)
+        const user= await User.findById({name: name})
         const secret  = user.tempSecret;
         const verified = speakeasy.totp.verify({
             secret,
             encoding: 'base32',
-            token
+            code
         });
         if (verified) {
             // Update user data
-            res.json({ verified: true })
+            res.status(200).json({
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                token: generateToken(user._id),
+                otp: user.tempSecret})
         } else {
-            res.json({ verified: false})
+            res.json({ message: "invalid code"})
         }
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving user'})
+    };
+}
+
+const activateTwoFactor= async (req,res) => {
+    try {
+        // Retrieve user from database
+        const user= await User.findById(req.params.id)
+        user.twoFactor=true
+        const user1= await user.save()
+        res.status(200).json(user1)
     } catch(error) {
         console.error(error);
         res.status(500).json({ message: 'Error retrieving user'})
@@ -223,5 +251,5 @@ module.exports = {
     updateUser,
     deleteUser,
     verifyUser,
-    verifySecret,
+    verifySecret,activateTwoFactor,
 }

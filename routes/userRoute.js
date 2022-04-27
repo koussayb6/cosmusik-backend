@@ -5,13 +5,14 @@ const {
     loginUser,
     getAll,
     updateUser,
-    deleteUser, verifyUser, verifySecret
+    deleteUser, verifyUser, verifySecret, activateTwoFactor
 } = require('../controllers/userController')
 const { protect } = require('../middleware/authMiddleware')
 
 router.post('/register', registerUser)
 router.post('/login', loginUser)
-router.get('/verifyS', verifySecret)
+router.post('/otp', verifySecret)
+router.get('/2fa/:id', activateTwoFactor)
 router.get('/',  getAll)
 router.put('/:id', protect, updateUser)
 router.delete('/:id', protect, deleteUser)

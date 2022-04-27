@@ -30,6 +30,7 @@ const userSchema = mongoose.Schema(
             enum: ['Pending', 'Active'],
             default: 'Pending'
         },
+        twoFactor: Boolean,
         confirmationCode: {
             type: String,
             unique: true },
