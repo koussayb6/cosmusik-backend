@@ -10,7 +10,7 @@ const {
 
 
 router.route('/').get(getReviews)
-router.route('/:id').post(setReview).put(updateReview).delete(deleteReview).get(getCourseReviews)
+router.route('/:id').put(updateReview).delete(deleteReview).get(getCourseReviews)
 router.route('/:iduser/:idcourse').post(setReview)
 
 

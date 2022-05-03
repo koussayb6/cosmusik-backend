@@ -12,7 +12,7 @@ const getVideoCourse = asyncHandler(async (req,res) => {
     res.json(vc)
 })
 const getOneVideoCourse = asyncHandler(async (req,res) => {
-    const vc = await videocourse.findById(req.params.iduser).populate('user')
+    const vc = await videocourse.findById(req.params.iduser).populate('user').populate('reviews')
 
     res.json(vc)
 })
