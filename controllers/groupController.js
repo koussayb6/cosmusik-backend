@@ -1,6 +1,8 @@
 const GroupModel = require("../models/groupModel");
 const ObjectID = require("mongoose").Types.ObjectId;
 const asyncHandler = require("express-async-handler");
+const { populate } = require("../models/groupModel");
+const multer = require("multer");
 
 module.exports.readGroup = async (req, res) => {
   GroupModel.find((err, docs) => {
@@ -13,18 +15,35 @@ module.exports.readOneGroup = async (req, res) => {
   GroupModel.findById(req.params.id, (err, docs) => {
     if (!err) res.send(docs);
     else console.log("Error to get data : " + err);
-  }).sort({ createdAt: -1 });
+  })
+    .populate({
+      path: "requests",
+      populate: { path: "requesterId", model: "User" },
+    })
+    .sort({ createdAt: -1 });
 };
+
 module.exports.creatGroup = async (req, res) => {
   // if (!ObjectID.isValid(req.params.id))
   //return res.status(400).send("ID unknown : " + req.params.id);
-
+  const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+      callback(
+        null,
+        "C:/Users/ahmed/Desktop/react/cosmusik-frontend/public/uploads"
+      );
+    },
+    filename: (req, file, callback) => {
+      callback(null, file.originalname);
+    },
+  });
   const newGroup = new GroupModel({
     title: req.body.title,
     admins: [req.params.id],
     members: [],
     public: true,
     posts: [],
+    groupImage: req.file.originalname,
   });
 
   try {
@@ -40,14 +59,13 @@ module.exports.updateGroup = (req, res) => {
     return res.status(400).send("ID unknown : " + req.params.id);
 
   const updatedRecord = {
-    title: req.body.title,
-    public: req.body.public,
+    public: false,
   };
 
   GroupModel.findByIdAndUpdate(
     req.params.id,
     { $set: updatedRecord },
-    { new: true },
+    { new: false },
     (err, docs) => {
       if (!err) res.send(docs);
       else console.log("Update error : " + err);
@@ -102,7 +120,7 @@ module.exports.sendRequest = (req, res) => {
         {
           $push: {
             requests: {
-              requesterId: req.body.userCnte,
+              requesterId: req.user.id,
               description: req.body.description,
               timestamp: new Date().getTime(),
             },
@@ -151,7 +169,10 @@ module.exports.readRequests = (req, res) => {
   GroupModel.findById(req.params.id, (err, docs) => {
     if (!err) res.send(docs.requests);
     else console.log("Error to get data : " + err);
-  }).sort({ createdAt: -1 });
+  })
+    .populate("requests")
+    .populate("requesterId")
+    .sort({ createdAt: -1 });
 };
 
 module.exports.confirmRequest = (req, res) => {
@@ -173,25 +194,23 @@ module.exports.confirmRequest = (req, res) => {
       return res.send("Confirmer");
     }
   );
+};
 
-  /** GroupModel.findById(groupId)
-    .then((group) => {
-      if (!group) {
-        return res.send(" Group not found");
-      } else {
-       // const aa = group.requests.findById(requestId);
-        //const id = aa.requesterId;
-        group.requests.pull(requesterId:requestId);
-        group.save();
-        group.push({ members: id });
-        
-      
-        return res.send("confirmer");
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    }); */
+module.exports.refuseRequest = (req, res) => {
+  const groupId = req.params.groupId;
+  const requesterId = req.params.requestId;
+  GroupModel.findByIdAndUpdate(
+    groupId,
+    {
+      $pull: {
+        requests: { requesterId: requesterId },
+      },
+    },
+    { safe: true },
+    (err, obj) => {
+      return res.send("Confirmer");
+    }
+  );
 };
 
 module.exports.searchForGroup = asyncHandler(async (req, res) => {

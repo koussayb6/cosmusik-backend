@@ -55,7 +55,6 @@ io.on("connection", (socket) => {
 
   socket.on("setup", (userData) => {
     socket.join(userData._id);
-    
   });
 
   socket.on("new message", (newMessageRecieved) => {
@@ -77,11 +76,12 @@ io.on("connection", (socket) => {
   });
 
   //send and get message
-  socket.on("sendMessage", ({ receiverId, content }) => {
+  socket.on("sendMessage", ({ receiverId, content, imageMessage }) => {
     const a = users.find((x) => (x.userId = receiverId));
     io.to(a.socketId).emit("getMessage", {
       receiverId,
       content,
+      imageMessage,
     });
   });
 

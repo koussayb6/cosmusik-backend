@@ -21,13 +21,14 @@ const GroupSchema = new mongoose.Schema(
     requests: {
       type: [
         {
-          requesterId: String,
+          requesterId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
           description: String,
           timestamp: Number,
         },
       ],
       required: true,
     },
+    groupImage: { type: String },
   },
   {
     timestamps: true,

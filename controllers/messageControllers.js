@@ -17,22 +17,25 @@ const allMessages = asyncHandler(async (req, res) => {
     throw new Error(error.message);
   }
 });
- 
+
 //@description     Create New Message
 //@route           POST /api/Message/
 //@access          Protected
 const sendMessage = asyncHandler(async (req, res) => {
   const { content, chatId } = req.body;
 
-  if (!content || !chatId) {
+  if (!chatId) {
     console.log("Invalid data passed into request");
     return res.sendStatus(400);
   }
+  let cnt = "";
+  if (content) cnt = content;
 
   var newMessage = {
     sender: req.user._id,
-    content: content,
+    content: cnt,
     chat: chatId,
+    imageMessage: req.file?.originalname,
   };
 
   try {
