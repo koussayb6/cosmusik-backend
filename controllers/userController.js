@@ -6,6 +6,8 @@ const User = require('../models/userModel')
 const nodemailer= require('../config/nodemailer')
 const passport = require("passport");
 const {Strategy: FacebookStrategy} = require("passport-facebook");
+const QRCode = require('qrcode');
+
 
 // @desc    Register new user
 // @route   POST /api/users
@@ -31,6 +33,9 @@ const registerUser = asyncHandler(async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt)
     const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
     const temp_secret = speakeasy.generateSecret();
+    // Get the data URL of the authenticator URL
+    const qrData = await QRCode.toDataURL(temp_secret.otpauth_url)
+    console.log(qrData)
     // Create user
     const user = await User.create({
         name,
@@ -38,7 +43,8 @@ const registerUser = asyncHandler(async (req, res) => {
         password: hashedPassword,
         role: "user",
         confirmationCode: token,
-        tempSecret: temp_secret.base32
+        tempSecret: temp_secret.base32,
+        secretQR: qrData,
     })
 
     if (user) {
@@ -76,11 +82,10 @@ const loginUser = asyncHandler(async (req, res) => {
         }
         if(user.twoFactor){
            return res.json({
-                user:{_id: user.id,
+                _id: user.id,
                 name: user.name,
                 email: user.email,
-                },
-                otp: true
+                twoFactor: true
             })
         }
         res.json({
@@ -88,7 +93,8 @@ const loginUser = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
             token: generateToken(user._id),
-            otp: user.tempSecret
+            otp: user.tempSecret,
+            otpQR: user.secretQR,
         })
     } else {
         res.status(400)
@@ -160,8 +166,8 @@ const getAll = asyncHandler(async (req, res) => {
     }
     if(email) condition.email={$regex: email}
     if(role) condition.role={$regex: role}
-    const users= await User.find(condition)
-    res.status(200).json(users).select('-password')
+    const users= await User.find(condition).select('-password')
+    res.status(200).json(users)
 })
 
 const verifyUser = (req, res, next) => {
@@ -184,7 +190,8 @@ const verifyUser = (req, res, next) => {
                     name: user.name,
                     email: user.email,
                     token: generateToken(user._id),
-                    otp: user.tempSecret
+                    otp: user.tempSecret,
+                    otpQR: user.secretQR,
 
                 })
             });
@@ -200,26 +207,35 @@ const generateToken = (id) => {
 }
 
 const verifySecret= async (req,res) => {
-    const { name, code } = req.body;
+    const { name, token } = req.body;
     try {
         // Retrieve user from database
-        const user= await User.findById({name: name})
+        const user= await User.findOne({name: name})
         const secret  = user.tempSecret;
+        console.log(user.tempSecret)
+
         const verified = speakeasy.totp.verify({
             secret,
             encoding: 'base32',
-            code
+            token
         });
+        console.log(verified)
         if (verified) {
+            console.log(user.tempSecret)
+
             // Update user data
+            user.twoFactor=true;
+            await user.save()
             res.status(200).json({
                 _id: user.id,
                 name: user.name,
                 email: user.email,
                 token: generateToken(user._id),
-                otp: user.tempSecret})
+                otp: user.tempSecret,
+                otpQR: user.secretQR,
+                twoFactor: true})
         } else {
-            res.json({ message: "invalid code"})
+            res.status(400).json({ message: "invalid code"})
         }
     } catch(error) {
         console.error(error);

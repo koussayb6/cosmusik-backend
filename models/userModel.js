@@ -35,7 +35,8 @@ const userSchema = mongoose.Schema(
             type: String,
             unique: true },
         facebookId: String,
-        tempSecret: String
+        tempSecret: String,
+        secretQR: String,
     },
     {
         timestamps: true,
