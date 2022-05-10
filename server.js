@@ -39,6 +39,13 @@ app.get('/auth/facebook/callback',
         // Successful authentication, redirect home.
         res.send(req.user.facebookId);
     });
+app.use('/pi/reviews', require('./routes/reviewRoute'))
+app.use('/pi/videocourse', require('./routes/videocourseRoute'))
+app.use('/pi/video', require('./routes/videoRoute'))
+app.use('/pi/playlist', require('./routes/playlistRoute'))
+app.use('/pi/instrument', require('./routes/instrumentRoute'))
+
+
 
 // Serve frontend
 /*if (process.env.NODE_ENV === 'production') {

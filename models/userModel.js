@@ -36,6 +36,26 @@ const userSchema = mongoose.Schema(
             unique: true },
         facebookId: String,
         tempSecret: String,
+        subscriptions:{
+            type:[
+                {
+                    courseId:String,
+                    coursetype:String,
+                    progress : Number,
+                    totalhours:Number,
+                    lessons:{
+                        type:[
+                            {
+                                lessonId:String,
+                                duree:Number,
+                                completed:Boolean
+                            }
+                        ]
+                    }
+                }
+            ],
+
+        },
         secretQR: String,
     },
     {
