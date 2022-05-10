@@ -1,6 +1,12 @@
-const express = require("express");
-const dotenv = require("dotenv").config();
-const connectDB = require("./config/db");
+const express = require('express')
+const dotenv = require('dotenv').config()
+const connectDB = require('./config/db')
+const passport = require("passport");
+const {Strategy: FacebookStrategy} = require("passport-facebook");
+const User = require("./models/userModel");
+const port = process.env.PORT || 5000
+const cors= require('cors')
+const {errorHandler} = require("./middleware/errorMiddleware");
 const bodyParser = require("body-parser");
 const postRoutes = require("./routes/classPostRouter");
 const groupRoutes = require("./routes/groupRouter");
@@ -8,8 +14,6 @@ const chatRoutes = require("./routes/chatRouter");
 
 const userRoutes = require("./routes/userRoute");
 const messageRoutes = require("./routes/messageRoutes");
-const port = process.env.PORT || 5000;
-const cors = require("cors");
 const io = require("socket.io")(8901, {
   cors: {
     origin: "http://localhost:3000",
@@ -17,11 +21,41 @@ const io = require("socket.io")(8901, {
 });
 connectDB();
 
-const app = express();
+const app = express()
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cors())
+app.use(errorHandler)
+app.use('/api/users', require('./routes/userRoute'))
+
+passport.use(new FacebookStrategy({
+        clientID: process.env.FB_CLIENT_ID,
+        clientSecret: process.env.FB_CLIENT_SECRET,
+        callbackURL: "http://localhost:3000/auth/facebook/callback",
+        profileFields: ['id', 'displayName', 'photos', 'email']
+    },
+    function(accessToken, refreshToken, profile, cb) {
+        User.create({ facebookId: profile.id, name: profile.displayName, email: profile.email }, function (err, user) {
+            return cb(err, user);
+        });
+    }
+));
+app.get('/auth/facebook',
+    passport.authenticate('facebook'));
+
+app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', { failureRedirect: '/login' }),
+    function(req, res) {
+        // Successful authentication, redirect home.
+        res.send(req.user.facebookId);
+    });
+app.use('/pi/reviews', require('./routes/reviewRoute'))
+app.use('/pi/videocourse', require('./routes/videocourseRoute'))
+app.use('/pi/video', require('./routes/videoRoute'))
+app.use('/pi/playlist', require('./routes/playlistRoute'))
+app.use('/pi/instrument', require('./routes/instrumentRoute'))
+
 
 //Routes
 app.use("/api/post", postRoutes);
