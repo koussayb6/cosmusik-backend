@@ -3,7 +3,7 @@ const asyncHandler = require('express-async-handler')
 const Review = require('../models/reviewModel')
 const User = require('../models/userModel')
 const {json} = require("express");
-const interactiveCourse = require("../models/interactiveCourseModel");
+const videocourse = require("../models/videocourseModel");
 
 const getsubscriptions = asyncHandler(async (req,res) => {
         const user = await User.findById(req.params.id)
@@ -13,18 +13,18 @@ const getsubscriptions = asyncHandler(async (req,res) => {
 
 const addsubscription = asyncHandler(async (req, res) => {
 
-    const lesson = await interactiveCourse.findById(req.params.idlesson);
+    const course = await videocourse.findById(req.params.idcourse);
     let lessons=[];
     let totalhours=0;
-    lesson.weeks.forEach(week =>
-        week.lessons.forEach(lesson =>{
-            lessons.push({lessonId: lesson._id ,duree: lesson.length , completed: false}),totalhours += lesson.length}));
+    course.sections.forEach(section =>
+        section.videos.forEach(video =>{
+            lessons.push({lessonId: video._id ,duree: video.length , completed: false}),totalhours += video.length}));
     const sub = await User.findByIdAndUpdate(req.params.iduser,
         {
             $push: {
                 subscriptions: {
-                    lessonId: req.params.idlesson,
-                    lessontype: req.body.lessontype,
+                    courseId: req.params.idcourse,
+                    coursetype: req.body.coursetype,
                     progress: 0,
                     totalhours: totalhours,
                     lessons: lessons
@@ -36,12 +36,12 @@ const addsubscription = asyncHandler(async (req, res) => {
     res.json(sub)
 })
 
-const validelesson = asyncHandler(async (req, res) => {
+const validevideo = asyncHandler(async (req, res) => {
     const sub = await User.findById(req.params.iduser);
     let duree=0;
     let lessons=[];
     let subscription=[lessons];
-    let lessonid=req.params.idlesson;
+    let lessonid=req.params.idvideo;
     let subid=req.params.idsubscription;
     /*const valid = await User.findByIdAndUpdate({_id:req.params.iduser ,"subscriptions._id":req.params.idsubscription},
         [{
@@ -59,12 +59,12 @@ const validelesson = asyncHandler(async (req, res) => {
                     }
             }
         }])*/
-    sub.subscriptions.forEach(week =>{if(week.id===subid){
-        week.lessons.forEach(lesson =>{if(lesson.lessonId===lessonid){
-            duree=week.progress+(lesson.duree/week.totalhours)*100;
-            lessons.push({lessonId: lesson.lessonId ,duree: lesson.duree , completed: true})}
+    sub.subscriptions.forEach(section =>{if(section.id===subid){
+        section.lessons.forEach(video =>{if(video.lessonId===lessonid){
+            duree=section.progress+(video.duree/section.totalhours)*100;
+            lessons.push({lessonId: video.lessonId ,duree: video.duree , completed: true})}
         else {
-                lessons.push({lessonId: lesson.lessonId ,duree: lesson.duree , completed: lesson.completed})
+                lessons.push({lessonId: video.lessonId ,duree: video.duree , completed: video.completed})
             }}
         )}});
     const sub1 = await User.findOneAndUpdate({_id:req.params.iduser,"subscriptions._id":req.params.idsubscription},
@@ -76,9 +76,9 @@ const validelesson = asyncHandler(async (req, res) => {
 
         },
     );
-    //const lesson = await User.findById(req.params.idlesson);
+    //const video = await User.findById(req.params.idvideo);
     /*const vc = await User.findByIdAndUpdate({_id:req.params.iduser ,"subscriptions._id":req.params.idsubscription,
-            "subscriptions.lessons._id":req.params.idlesson},
+            "subscriptions.lessons._id":req.params.idvideo},
         {
             $inc: {
                 "subscriptions.0.progress": duree
@@ -92,5 +92,5 @@ const validelesson = asyncHandler(async (req, res) => {
 module.exports = {
     getsubscriptions,
     addsubscription,
-    validelesson
+    validevideo
 }

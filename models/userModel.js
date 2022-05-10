@@ -30,11 +30,33 @@ const userSchema = mongoose.Schema(
             enum: ['Pending', 'Active'],
             default: 'Pending'
         },
+        twoFactor: Boolean,
         confirmationCode: {
             type: String,
             unique: true },
         facebookId: String,
-        tempSecret: String
+        tempSecret: String,
+        subscriptions:{
+            type:[
+                {
+                    courseId:String,
+                    coursetype:String,
+                    progress : Number,
+                    totalhours:Number,
+                    lessons:{
+                        type:[
+                            {
+                                lessonId:String,
+                                duree:Number,
+                                completed:Boolean
+                            }
+                        ]
+                    }
+                }
+            ],
+
+        },
+        secretQR: String,
     },
     {
         timestamps: true,

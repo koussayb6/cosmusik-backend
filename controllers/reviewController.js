@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const Review = require('../models/reviewModel')
 const User = require('../models/userModel')
 const {json} = require("express");
-const interactivaCourse = require("../models/interactivaCourseModel");
+const videocourse = require("../models/videocourseModel");
 
 const getReviews = asyncHandler(async (req,res) => {
     const reviews = await Review.find()
@@ -12,7 +12,7 @@ const getReviews = asyncHandler(async (req,res) => {
     res.json(reviews)
 })
 const getCourseReviews = asyncHandler(async (req,res) => {
-    const reviews= await interactivaCourse.findById(req.params.id).populate('reviews');
+    const reviews= await videocourse.findById(req.params.id).populate('reviews');
         res.json(reviews.reviews)
     ;
     //const r =[];
@@ -33,7 +33,7 @@ const setReview = asyncHandler(async (req, res) => {
 
 
 
-    const vc = await interactivaCourse.findByIdAndUpdate(req.params.idcourse,
+    const vc = await videocourse.findByIdAndUpdate(req.params.idcourse,
         {
             $push: {
                 reviews: review

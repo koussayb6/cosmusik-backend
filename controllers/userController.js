@@ -6,6 +6,8 @@ const User = require('../models/userModel')
 const nodemailer= require('../config/nodemailer')
 const passport = require("passport");
 const {Strategy: FacebookStrategy} = require("passport-facebook");
+const QRCode = require('qrcode');
+
 
 // @desc    Register new user
 // @route   POST /api/users
@@ -22,7 +24,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const userExists = await User.findOne({ email })
 
     if (userExists) {
-        res.status(400)
+        res.status(400).json({message: "User already exists"} )
         throw new Error('User already exists')
     }
 
@@ -31,6 +33,9 @@ const registerUser = asyncHandler(async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt)
     const token = jwt.sign({email: req.body.email}, process.env.JWT_SECRET)
     const temp_secret = speakeasy.generateSecret();
+    // Get the data URL of the authenticator URL
+    const qrData = await QRCode.toDataURL(temp_secret.otpauth_url)
+    console.log(qrData)
     // Create user
     const user = await User.create({
         name,
@@ -38,7 +43,8 @@ const registerUser = asyncHandler(async (req, res) => {
         password: hashedPassword,
         role: "user",
         confirmationCode: token,
-        tempSecret: temp_secret.base32
+        tempSecret: temp_secret.base32,
+        secretQR: qrData,
     })
 
     if (user) {
@@ -48,10 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
             user.confirmationCode);
 
         res.status(201).json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            conf: user.confirmationCode,
+
+            message: `a confirmation email has been sent to ${user.email}`,
             secret: user.tempSecret,
         })
 
@@ -71,16 +75,26 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email })
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        /*if (user.status != "Active") {
-            return res.status(401).send({
+        if (user.status != "Active") {
+            return res.status(401).json({
                 message: "Pending Account. Please Verify Your Email!",
             });
-        }*/
+        }
+        if(user.twoFactor){
+           return res.json({
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                twoFactor: true
+            })
+        }
         res.json({
             _id: user.id,
             name: user.name,
             email: user.email,
             token: generateToken(user._id),
+            otp: user.tempSecret,
+            otpQR: user.secretQR,
         })
     } else {
         res.status(400)
@@ -152,8 +166,8 @@ const getAll = asyncHandler(async (req, res) => {
     }
     if(email) condition.email={$regex: email}
     if(role) condition.role={$regex: role}
-    const users= await User.find(condition)
-    res.status(200).json(users).select('-password')
+    const users= await User.find(condition).select('-password')
+    res.status(200).json(users)
 })
 
 const verifyUser = (req, res, next) => {
@@ -176,6 +190,9 @@ const verifyUser = (req, res, next) => {
                     name: user.name,
                     email: user.email,
                     token: generateToken(user._id),
+                    otp: user.tempSecret,
+                    otpQR: user.secretQR,
+
                 })
             });
         })
@@ -190,21 +207,35 @@ const generateToken = (id) => {
 }
 
 const verifySecret= async (req,res) => {
-    const { userId, token } = req.body;
+    const { name, token } = req.body;
     try {
         // Retrieve user from database
-        const user= await User.findById(userId)
+        const user= await User.findOne({name: name})
         const secret  = user.tempSecret;
+        console.log(user.tempSecret)
+
         const verified = speakeasy.totp.verify({
             secret,
             encoding: 'base32',
             token
         });
+        console.log(verified)
         if (verified) {
+            console.log(user.tempSecret)
+
             // Update user data
-            res.json({ verified: true })
+            user.twoFactor=true;
+            await user.save()
+            res.status(200).json({
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                token: generateToken(user._id),
+                otp: user.tempSecret,
+                otpQR: user.secretQR,
+                twoFactor: true})
         } else {
-            res.json({ verified: false})
+            res.status(400).json({ message: "invalid code"})
         }
     } catch(error) {
         console.error(error);
@@ -212,7 +243,35 @@ const verifySecret= async (req,res) => {
     };
 }
 
+const activateTwoFactor= async (req,res) => {
+    try {
+        // Retrieve user from database
+        const user= await User.findById(req.params.id)
+        user.twoFactor=true
+        const user1= await user.save()
+        res.status(200).json(user1)
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving user'})
+    };
+}
+//get one user
+const getOneUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    res.status(200).json(user);
+});
+const searchForUser = asyncHandler(async (req, res) => {
+    const keyword = req.query.search
+        ? {
+            $and: [{ name: { $regex: req.query.search, $options: "i" } }],
+            //     $and: [{ public: { $exists: true } }],
+        }
+        : {};
 
+    const users = await userModel.find(keyword);
+    res.send(users);
+
+});
 
 
 
@@ -223,5 +282,7 @@ module.exports = {
     updateUser,
     deleteUser,
     verifyUser,
-    verifySecret,
+    verifySecret,activateTwoFactor,
+    getOneUser,
+    searchForUser
 }

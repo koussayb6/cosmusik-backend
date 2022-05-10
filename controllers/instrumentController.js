@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler')
 const {json} = require("express");
 const categoryInstrument = require("../models/categoryInstrumentModel");
 const Instrument = require("../models/instrumentModel");
+const Video = require("../models/videoModel");
 
 const getinstrument = asyncHandler(async (req,res) => {
     const instrument = await Instrument.find()
