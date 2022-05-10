@@ -13,7 +13,7 @@ module.exports.readTask=(req,res)=>{
 }
 
 
-/**module.exports.createTask= async (req,res)=>{
+module.exports.createTask= async (req,res)=>{
     const  course=await interactiveCourseModel.findById(req.params.courseid)
     const newTask = new taskModel({
        title:req.body.title,
@@ -34,7 +34,7 @@ module.exports.readTask=(req,res)=>{
         return res.status(400).send("error while creating task"+err)
     }
 }
-**/
+
 
 module.exports.updateTask=async(req,res)=>{
     if(!objectId.isValid(req.params.id))
