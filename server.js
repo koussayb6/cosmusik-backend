@@ -15,7 +15,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors())
 app.use('/api/users', require('./routes/userRoute'))
-
+/*
 passport.use(new FacebookStrategy({
         clientID: process.env.FB_CLIENT_ID,
         clientSecret: process.env.FB_CLIENT_SECRET,
@@ -36,7 +36,7 @@ app.get('/auth/facebook/callback',
     function(req, res) {
         // Successful authentication, redirect home.
         res.send(req.user.facebookId);
-    });
+    });*/
 app.use('/pi/reviews', require('./routes/reviewRoute'))
 app.use('/pi/videocourse', require('./routes/videocourseRoute'))
 app.use('/pi/video', require('./routes/videoRoute'))

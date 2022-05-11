@@ -24,12 +24,13 @@ const setReview = asyncHandler(async (req, res) => {
         res.status(400)
         throw new Error('Please add a text field')
     }
-    const user = await User.findById(req.params.iduser);
+    const user = await User.findById(req.user.id);
     const review = await Review.create({
         message: req.body.message,
         user: user,
         rating: req.body.rating
     })
+    const finalRev=await Review.findById(review._id).populate('user');
 
 
 
@@ -41,7 +42,7 @@ const setReview = asyncHandler(async (req, res) => {
             },
         },
     );
-    res.json(review)
+    res.json(finalRev)
 });
 
 const updateReview = asyncHandler(async (req, res) => {

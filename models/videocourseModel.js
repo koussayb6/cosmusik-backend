@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const videoCourseSchema = new mongoose.Schema(
     {
-        user:{ type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        user:{ type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
         title:{
             type:String,
