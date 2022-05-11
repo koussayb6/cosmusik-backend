@@ -13,11 +13,11 @@ const userSchema = mongoose.Schema(
         },
         password: {
             type: String,
-           // required: [true, 'Please add a password'],
+            // required: [true, 'Please add a password'],
         },
         role: {
             type: String,
-          //  required: [true, 'Please add a role'],
+            //  required: [true, 'Please add a role'],
         },
         phone: {
             type: Number,
@@ -30,6 +30,7 @@ const userSchema = mongoose.Schema(
             enum: ['Pending', 'Active'],
             default: 'Pending'
         },
+        twoFactor: Boolean,
         confirmationCode: {
             type: String,
             unique: true },
@@ -54,7 +55,16 @@ const userSchema = mongoose.Schema(
                 }
             ],
 
-        }
+        },
+        secretQR: String,
+        followers: {
+            type: Array,
+            default: [],
+        },
+        followings: {
+            type: Array,
+            default: [],
+        },
     },
     {
         timestamps: true,
